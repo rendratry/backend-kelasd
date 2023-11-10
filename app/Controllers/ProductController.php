@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\ProductModel;
 use CodeIgniter\API\ResponseTrait;
+use PHPUnit\Framework\Constraint\IsNull;
 
 class ProductController extends BaseController {
     use ResponseTrait;
@@ -16,6 +17,46 @@ class ProductController extends BaseController {
         ];
 
         $this->product->insertProductORM($data);
+    }
+
+    public function insertProductApi(){
+        $requestData = $this->request->getJSON();
+
+        $validation = $this->validate([
+            'nama_product' => 'required',
+            'description' => 'required'
+        ]);
+
+        if(!$validation){
+            $this->response->setStatusCode(400);
+            return $this->response->setJSON([
+                'code' => 400,
+                'status' => "BAD REQUEST",
+                'data' => null
+            ]);
+        }
+        $data = [
+            'nama_product' => $requestData->nama_product,
+            'description' => $requestData->description
+        ];
+
+        $insert = $this->product->insertProductORM($data);
+        if ($insert) {
+            return $this->respond(
+                [
+                    'code' => 200,
+                    'status' => "OK",
+                    'data' => $data
+                ]
+            );
+        } else {
+            $this->response->setStatusCode(500);
+            return $this->response->setJSON([
+                'code' => 500,
+                'status' => "INTERNAL SERVER ERROR",
+                'data' => null
+            ]);
+        }
     }
 
     public function readProduct(){
